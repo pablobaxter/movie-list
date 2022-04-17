@@ -1,0 +1,25 @@
+query GetMoviesQuery($genre: String, $search: String, $limit: Int, $offset: Int, $orderBy: String, $sort: Sort) {
+  movies(genre: $genre, search: $search, limit: $limit, offset: $offset, orderBy: $orderBy, sort: $sort) {
+    id
+    title
+    posterPath
+    voteAverage
+  }
+}
+
+query GetMovieQuery($id: Int!) {
+  movie(id: $id) {
+    id
+    overview
+    popularity
+    posterPath
+    runtime
+    title
+    voteAverage
+    voteCount
+  }
+}
+
+query GetMovieGenres {
+  genres
+}

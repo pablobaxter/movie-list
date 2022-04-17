@@ -315,3 +315,6 @@ Thumbs.db
 !/gradle/wrapper/gradle-wrapper.jar
 
 # End of https://www.toptal.com/developers/gitignore/api/androidstudio,android,kotlin,intellij+all
+
+# GraphQL generated files
+schema.json.graphql

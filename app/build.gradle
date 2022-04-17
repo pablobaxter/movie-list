@@ -57,6 +57,8 @@ dependencies {
 
     // Apollo
     implementation "com.apollographql.apollo3:apollo-runtime:3.2.1"
+    implementation "com.apollographql.apollo3:apollo-normalized-cache:3.2.1"
+    implementation "com.apollographql.apollo3:apollo-normalized-cache-sqlite:3.2.1"
 
     // Networking
     implementation "com.squareup.okhttp3:okhttp:4.9.3"
@@ -87,7 +89,7 @@ dependencies {
 
 apollo {
     service("demo") {
-        srcDir("src/main/graphql/com/frybits/android/movielist")
-        packageName.set("com.frybits.android.movielist")
+        srcDir("src/main/graphql/com/frybits/android/movielist/repo")
+        packageName.set("com.frybits.android.movielist.repo")
     }
 }
