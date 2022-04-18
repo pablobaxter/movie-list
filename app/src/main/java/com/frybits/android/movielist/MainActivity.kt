@@ -3,13 +3,13 @@ package com.frybits.android.movielist
 import android.os.Bundle
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import com.frybits.android.movielist.ui.dashboard.DemoViewModel
+import com.frybits.android.movielist.ui.dashboard.MovieViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
 
-    private val viewModel: DemoViewModel by viewModels()
+    private val viewModel: MovieViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

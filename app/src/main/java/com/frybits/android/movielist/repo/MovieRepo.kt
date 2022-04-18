@@ -3,10 +3,12 @@ package com.frybits.android.movielist.repo
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import com.apollographql.apollo3.ApolloClient
+import com.apollographql.apollo3.api.Optional
 import com.apollographql.apollo3.cache.normalized.FetchPolicy
 import com.apollographql.apollo3.cache.normalized.fetchPolicy
 import com.apollographql.apollo3.cache.normalized.watch
 import com.frybits.android.movielist.repo.cache.ImageCache
+import com.frybits.android.movielist.repo.type.Sort
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -28,11 +30,22 @@ import kotlin.coroutines.resumeWithException
 
 interface MovieRepo {
 
-    fun allMoviesFlow(): Flow<Result<List<GetMoviesQuery.Movie>>>
-
     suspend fun getMovie(id: Int): Result<GetMovieQuery.Movie>
 
     suspend fun getMoviePoster(id: Int): Result<Bitmap>
+
+    suspend fun getCastProfile(cast: GetMovieQuery.Cast): Result<Bitmap>
+
+    suspend fun getMovieGenres(): Result<List<String>>
+
+    suspend fun getMoviesByQuery(
+        genre: String? = null,
+        search: String? = null,
+        limit: Int? = null,
+        offset: Int? = null,
+        orderBy: String? = null,
+        sort: Sort? = null
+    ): Result<List<GetMoviesQuery.Movie>>
 
     fun onLowMemory()
 }
@@ -43,12 +56,6 @@ class MovieRepoImpl @Inject constructor(
     private val imageCache: ImageCache
 ): MovieRepo {
 
-    override fun allMoviesFlow(): Flow<Result<List<GetMoviesQuery.Movie>>> {
-        return apolloClient.query(GetMoviesQuery()).fetchPolicy(FetchPolicy.CacheAndNetwork).toFlow().map { response ->
-            return@map runCatching { requireNotNull(response.dataAssertNoErrors.movies) { "No movies found" }.filterNotNull() }
-        }
-    }
-
     override suspend fun getMovie(id: Int): Result<GetMovieQuery.Movie> {
         return runCatching {
             return@runCatching requireNotNull(apolloClient.query(GetMovieQuery(id)).execute().dataAssertNoErrors.movie) { "Movie $id not found" }
@@ -58,22 +65,61 @@ class MovieRepoImpl @Inject constructor(
     override suspend fun getMoviePoster(id: Int): Result<Bitmap> {
         return getMovie(id).mapCatching { movie ->
             val posterPath = requireNotNull(movie.posterPath) { "No movie poster path found" }
-            val imageKey = URI(posterPath).path.dropWhile { it == '/' }.replace('/', '_')
-            val image = imageCache.retrieveImage(imageKey)
-            if (image == null) {
-                val networkImage = requireNotNull(getImageFromNetwork(posterPath)) { "No image poster found" }
-                imageCache.storeImage(imageKey, networkImage)
-                return@mapCatching networkImage
-            } else {
-                return@mapCatching image
-            }
+            return@mapCatching getImageFromCacheThenNetwork(posterPath)
         }
     }
 
-    private suspend fun getImageFromNetwork(posterPath: String): Bitmap? {
+    override suspend fun getCastProfile(cast: GetMovieQuery.Cast): Result<Bitmap> {
+        return runCatching {
+            val profilePath = requireNotNull(cast.profilePath) { "No profile path found" }
+            return@runCatching getImageFromCacheThenNetwork(profilePath)
+        }
+    }
+
+    override suspend fun getMovieGenres(): Result<List<String>> {
+        return runCatching {
+            requireNotNull(apolloClient.query(GetMovieGenresQuery()).execute().dataAssertNoErrors.genres) { "No movies found" }
+        }
+    }
+
+    override suspend fun getMoviesByQuery(
+        genre: String?,
+        search: String?,
+        limit: Int?,
+        offset: Int?,
+        orderBy: String?,
+        sort: Sort?
+    ): Result<List<GetMoviesQuery.Movie>> {
+        return runCatching {
+            apolloClient.query(
+                GetMoviesQuery(
+                    genre = Optional.presentIfNotNull(genre),
+                    search = Optional.presentIfNotNull(search),
+                    limit = Optional.presentIfNotNull(limit),
+                    offset = Optional.presentIfNotNull(offset),
+                    orderBy = Optional.presentIfNotNull(orderBy),
+                    sort = Optional.presentIfNotNull(sort)
+                )
+            ).execute().dataAssertNoErrors.movies.orEmpty().filterNotNull()
+        }
+    }
+
+    private suspend fun getImageFromCacheThenNetwork(urlPath: String): Bitmap {
+        val imageKey = urlPath.generateKeyFromPath()
+        val image = imageCache.retrieveImage(imageKey)
+        return if (image == null) {
+            val networkImage = requireNotNull(getImageFromNetwork(urlPath)) { "No image found" }
+            imageCache.storeImage(imageKey, networkImage)
+            networkImage
+        } else {
+            image
+        }
+    }
+
+    private suspend fun getImageFromNetwork(urlPath: String): Bitmap? {
         val request = Request.Builder()
             .get()
-            .url(posterPath)
+            .url(urlPath)
             .build()
 
         return suspendCancellableCoroutine { cont ->
@@ -95,6 +141,10 @@ class MovieRepoImpl @Inject constructor(
     override fun onLowMemory() {
         imageCache.onLowMemory()
     }
+}
+
+private fun String.generateKeyFromPath(): String {
+    return URI(this).path.dropWhile { it == '/' }.replace('/', '_')
 }
 
 @Module

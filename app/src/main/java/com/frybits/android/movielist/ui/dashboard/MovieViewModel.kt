@@ -3,31 +3,17 @@ package com.frybits.android.movielist.ui.dashboard
 import android.graphics.Bitmap
 import android.util.Log
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import com.frybits.android.movielist.repo.GetMovieQuery
 import com.frybits.android.movielist.repo.GetMoviesQuery
 import com.frybits.android.movielist.repo.MovieRepo
-import dagger.hilt.android.AndroidEntryPoint
+import com.frybits.android.movielist.repo.type.Sort
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.shareIn
-import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 private const val LOG_TAG = "DemoViewModel"
 
 @HiltViewModel
-class DemoViewModel @Inject constructor(private val movieRepo: MovieRepo) : ViewModel() {
-
-    val moviesFlow: Flow<List<GetMoviesQuery.Movie>> = movieRepo.allMoviesFlow().map { result ->
-        return@map result.getOrElse {
-            Log.d(LOG_TAG, "Movie flow failure", it)
-            emptyList()
-        }
-    }.shareIn(viewModelScope, SharingStarted.Eagerly, replay = 1)
+class MovieViewModel @Inject constructor(private val movieRepo: MovieRepo) : ViewModel() {
 
     suspend fun getMovie(id: Int): GetMovieQuery.Movie? {
         return movieRepo.getMovie(id).onFailure {
@@ -39,6 +25,33 @@ class DemoViewModel @Inject constructor(private val movieRepo: MovieRepo) : View
         return movieRepo.getMoviePoster(id).onFailure {
             Log.d(LOG_TAG, "Unable to get movie poster", it)
         }.getOrNull()
+    }
+
+    suspend fun getCastProfile(cast: GetMovieQuery.Cast): Bitmap? {
+        return movieRepo.getCastProfile(cast).onFailure {
+            Log.d(LOG_TAG, "Unable to get cast profile", it)
+        }.getOrNull()
+    }
+
+    suspend fun getTop5Movies(): List<GetMoviesQuery.Movie> {
+        return movieRepo.getMoviesByQuery(limit = 5, orderBy = "voteAverage", sort = Sort.DESC).getOrElse {
+            Log.d(LOG_TAG, "Unable to get top 5 movies", it)
+            return@getOrElse emptyList()
+        }
+    }
+
+    suspend fun getMovieGenres(): List<String> {
+        return movieRepo.getMovieGenres().getOrElse {
+            Log.d(LOG_TAG, "Unable to get movie genres", it)
+            return@getOrElse emptyList()
+        }
+    }
+
+    suspend fun getAllMovies(): List<GetMoviesQuery.Movie> {
+        return movieRepo.getMoviesByQuery().getOrElse {
+            Log.d(LOG_TAG, "Movie list query failure", it)
+            return@getOrElse emptyList()
+        }
     }
 
     fun onLowMemory() {

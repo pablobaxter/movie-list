@@ -17,6 +17,14 @@ query GetMovieQuery($id: Int!) {
     title
     voteAverage
     voteCount
+    cast {
+      name
+      character
+      profilePath
+    }
+    director {
+      name
+    }
   }
 }
 
