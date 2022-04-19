@@ -1,4 +1,4 @@
-package com.frybits.android.movielist.ui.dashboard
+package com.frybits.android.movielist.ui
 
 import android.graphics.Bitmap
 import android.util.Log
@@ -43,6 +43,13 @@ class MovieViewModel @Inject constructor(private val movieRepo: MovieRepo) : Vie
     suspend fun getMovieGenres(): List<String> {
         return movieRepo.getMovieGenres().getOrElse {
             Log.d(LOG_TAG, "Unable to get movie genres", it)
+            return@getOrElse emptyList()
+        }
+    }
+
+    suspend fun getMoviesByGenre(genre: String?): List<GetMoviesQuery.Movie> {
+        return movieRepo.getMoviesByQuery(genre = genre).getOrElse {
+            Log.d(LOG_TAG, "Unable to get movie genre $genre", it)
             return@getOrElse emptyList()
         }
     }

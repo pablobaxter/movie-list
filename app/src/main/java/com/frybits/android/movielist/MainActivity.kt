@@ -3,7 +3,7 @@ package com.frybits.android.movielist
 import android.os.Bundle
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import com.frybits.android.movielist.ui.dashboard.MovieViewModel
+import com.frybits.android.movielist.ui.MovieViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
