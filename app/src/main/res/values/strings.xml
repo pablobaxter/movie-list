@@ -7,4 +7,16 @@
     <string name="genres">Genres</string>
     <string name="browse_all_button">Browse All Movies</string>
     <string name="director">Director</string>
+    <string name="duration">Duration: %1$d:%2$02d</string>
+    <string name="popularity">Popularity</string>
+    <string name="runtime">Movie Length</string>
+    <string name="title">Title</string>
+    <string name="voter_average">Vote Average</string>
+    <string name="sortby">Sort By:</string>
+    <string-array name="sort_options">
+        <item>@string/popularity</item>
+        <item>@string/runtime</item>
+        <item>@string/title</item>
+        <item>@string/voter_average</item>
+    </string-array>
 </resources>

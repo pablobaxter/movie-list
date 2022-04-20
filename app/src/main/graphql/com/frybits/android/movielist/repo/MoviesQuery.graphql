@@ -25,6 +25,7 @@ query GetMovieQuery($id: Int!) {
     director {
       name
     }
+    genres
   }
 }
 

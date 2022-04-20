@@ -6,6 +6,40 @@
     android:layout_height="match_parent"
     tools:context="com.frybits.android.movielist.ui.MovieListFragment">
 
+    <TextView
+        android:id="@+id/movieListTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="8dp"
+        android:textAppearance="@style/TextAppearance.AppCompat.Display1"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:text="Movie List Name" />
+
+    <Spinner
+        android:id="@+id/sortSpinner"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:entries="@array/sort_options"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="8dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/movieListTextView" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/movieListRecyclerView"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginTop="8dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/sortSpinner" />
+
     <ProgressBar
         android:id="@+id/movieListProgressBar"
         style="?android:attr/progressBarStyle"
@@ -20,27 +54,14 @@
         tools:visibility="visible" />
 
     <TextView
-        android:id="@+id/movieListTextView"
+        android:id="@+id/sortTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
         android:layout_marginEnd="8dp"
         android:layout_marginBottom="8dp"
-        android:textAppearance="@style/TextAppearance.AppCompat.Display1"
-        app:layout_constraintBottom_toTopOf="@+id/movieListRecyclerView"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        tools:text="Movie List Name" />
-
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/movieListRecyclerView"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/movieListTextView" />
+        android:text="@string/sortby"
+        app:layout_constraintBottom_toBottomOf="@+id/sortSpinner"
+        app:layout_constraintEnd_toStartOf="@+id/sortSpinner"
+        app:layout_constraintTop_toTopOf="@+id/sortSpinner" />
 </androidx.constraintlayout.widget.ConstraintLayout>

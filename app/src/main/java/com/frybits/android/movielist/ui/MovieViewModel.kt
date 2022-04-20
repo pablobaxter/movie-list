@@ -47,8 +47,8 @@ class MovieViewModel @Inject constructor(private val movieRepo: MovieRepo) : Vie
         }
     }
 
-    suspend fun getMoviesByGenre(genre: String?): List<GetMoviesQuery.Movie> {
-        return movieRepo.getMoviesByQuery(genre = genre).getOrElse {
+    suspend fun getMoviesByQuery(genre: String?, orderBy: OrderCategory): List<GetMoviesQuery.Movie> {
+        return movieRepo.getMoviesByQuery(genre = genre, orderBy = orderBy.toApolloStringQuery(), sort = orderBy.getOrderBy()).getOrElse {
             Log.d(LOG_TAG, "Unable to get movie genre $genre", it)
             return@getOrElse emptyList()
         }
@@ -63,5 +63,27 @@ class MovieViewModel @Inject constructor(private val movieRepo: MovieRepo) : Vie
 
     fun onLowMemory() {
         movieRepo.onLowMemory()
+    }
+}
+
+enum class OrderCategory {
+    POPULARITY, RUNTIME, TITLE, VOTER_AVERAGE
+}
+
+private fun OrderCategory.toApolloStringQuery(): String {
+    return when (this) {
+        OrderCategory.POPULARITY -> "popularity"
+        OrderCategory.VOTER_AVERAGE -> "voteAverage"
+        OrderCategory.TITLE -> "title"
+        OrderCategory.RUNTIME -> "runtime"
+    }
+}
+
+private fun OrderCategory.getOrderBy(): Sort {
+    return when (this) {
+        OrderCategory.POPULARITY,
+        OrderCategory.VOTER_AVERAGE,
+        OrderCategory.RUNTIME -> Sort.DESC
+        else -> Sort.ASC
     }
 }
