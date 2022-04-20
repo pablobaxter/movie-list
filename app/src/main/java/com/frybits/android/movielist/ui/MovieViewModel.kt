@@ -12,6 +12,9 @@ import javax.inject.Inject
 
 private const val LOG_TAG = "DemoViewModel"
 
+/**
+ * ViewModel the binds the business logic to the views
+ */
 @HiltViewModel
 class MovieViewModel @Inject constructor(private val movieRepo: MovieRepo) : ViewModel() {
 
@@ -50,13 +53,6 @@ class MovieViewModel @Inject constructor(private val movieRepo: MovieRepo) : Vie
     suspend fun getMoviesByQuery(genre: String?, orderBy: OrderCategory): List<GetMoviesQuery.Movie> {
         return movieRepo.getMoviesByQuery(genre = genre, orderBy = orderBy.toApolloStringQuery(), sort = orderBy.getOrderBy()).getOrElse {
             Log.d(LOG_TAG, "Unable to get movie genre $genre", it)
-            return@getOrElse emptyList()
-        }
-    }
-
-    suspend fun getAllMovies(): List<GetMoviesQuery.Movie> {
-        return movieRepo.getMoviesByQuery().getOrElse {
-            Log.d(LOG_TAG, "Movie list query failure", it)
             return@getOrElse emptyList()
         }
     }

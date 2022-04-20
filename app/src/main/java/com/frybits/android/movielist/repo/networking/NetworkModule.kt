@@ -40,26 +40,29 @@ class NetworkModule {
     fun provideApolloClient(okHttpClient: OkHttpClient, normalizedCacheFactory: NormalizedCacheFactory): ApolloClient {
         return ApolloClient.Builder()
             .serverUrl(API_URL)
-            .okHttpClient(okHttpClient)
-            .normalizedCache(normalizedCacheFactory)
+            .okHttpClient(okHttpClient) // Reuse the OkHttp client
+            .normalizedCache(normalizedCacheFactory) // Set the cache
             .build()
     }
 
     @Provides
     @Singleton
     fun provideMemoryCacheFactory(): MemoryCacheFactory {
+        // 10MB memory cache, though this should be evaluated for low memory devices
         return MemoryCacheFactory(maxSizeBytes = 10 * 1024 * 1024, expireAfterMillis = TimeUnit.SECONDS.toMillis(15))
     }
 
     @Provides
     @Singleton
     fun provideSqlCacheFactory(@ApplicationContext context: Context): SqlNormalizedCacheFactory {
+        // SQLite database cache, to prevent multiple network calls
         return SqlNormalizedCacheFactory(context, "movies.db")
     }
 
     @Provides
     @Singleton
     fun provideChainedCacheFactory(memoryCacheFactory: MemoryCacheFactory, sqlNormalizedCacheFactory: SqlNormalizedCacheFactory): NormalizedCacheFactory {
+        // Combine the caches here
         return memoryCacheFactory.chain(sqlNormalizedCacheFactory)
     }
 }

@@ -9,7 +9,7 @@
         android:id="@+id/navigation_dashboard"
         android:name="com.frybits.android.movielist.ui.DashboardFragment"
         android:label="@string/title_dashboard"
-        tools:layout="@layout/fragment_dashboard" >
+        tools:layout="@layout/fragment_dashboard">
         <action
             android:id="@+id/action_navigation_dashboard_to_movieListFragment"
             app:destination="@id/movieListFragment" />
@@ -20,7 +20,7 @@
     <fragment
         android:id="@+id/movieListFragment"
         android:name="com.frybits.android.movielist.ui.MovieListFragment"
-        android:label="MovieListFragment" >
+        android:label="MovieListFragment">
         <argument
             android:name="genre"
             android:defaultValue="@null"
@@ -34,7 +34,7 @@
         android:id="@+id/movieDetailFragment"
         android:name="com.frybits.android.movielist.ui.MovieDetailFragment"
         android:label="fragment_movie_detail"
-        tools:layout="@layout/fragment_movie_detail" >
+        tools:layout="@layout/fragment_movie_detail">
         <argument
             android:name="movieId"
             app:argType="integer" />

@@ -12,7 +12,6 @@ import com.frybits.android.movielist.R
 import com.frybits.android.movielist.databinding.FragmentMovieDetailBinding
 import com.frybits.android.movielist.databinding.ViewActorItemBinding
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
 import java.time.Duration
 
@@ -33,7 +32,8 @@ class MovieDetailFragment : Fragment() {
                 binding.movieDetailLoadProgressBar.visibility = View.GONE
             }
 
-            val postLoadJob = launch poster@{
+            // Load the post image for this movie asynchronously
+            launch poster@{
                 binding.moviePosterImageView.setImageResource(R.drawable.ic_baseline_movies_24)
                 try {
                     binding.posterImageProgressBar.visibility = View.VISIBLE
@@ -49,12 +49,16 @@ class MovieDetailFragment : Fragment() {
             binding.overviewTextView.text = movie.overview
             binding.directorNameTextView.text = movie.director.name
             binding.genresTextView.text = movie.genres.joinToString(", ")
+
             val duration = Duration.ofMinutes(movie.runtime.toLong())
             binding.runtimeTextView.text = resources.getString(R.string.duration, duration.toHours() % 24, duration.toMinutes() % 60)
-            val castProfileLoadJobs = movie.cast.map { cast ->
+
+            // Populate cast views
+            movie.cast.map { cast ->
                 val castView = ViewActorItemBinding.inflate(inflater, binding.actorLinearLayout, true)
                 castView.actorNameTextView.text = cast.name
                 castView.characterNameTextView.text = cast.character
+                // Load all cast profile images asynchronously
                 return@map launch cast@{
                     castView.imageView.setImageResource(R.drawable.ic_baseline_person_24)
                     try {
@@ -66,11 +70,6 @@ class MovieDetailFragment : Fragment() {
                     }
                 }
             }
-
-            postLoadJob.join()
-            castProfileLoadJobs.joinAll()
-
-            binding.root.invalidate()
         }
 
         return binding.root

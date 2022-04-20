@@ -18,6 +18,6 @@ class MainActivity : AppCompatActivity() {
 
     override fun onLowMemory() {
         super.onLowMemory()
-        viewModel.onLowMemory()
+        viewModel.onLowMemory() // Trigger the low memory logic here
     }
 }

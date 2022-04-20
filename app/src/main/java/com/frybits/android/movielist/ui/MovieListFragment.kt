@@ -40,16 +40,22 @@ class MovieListFragment : Fragment() {
         binding.movieListRecyclerView.layoutManager = GridLayoutManager(context, spanCount)
         binding.movieListRecyclerView.adapter = adapter
 
-
         lifecycleScope.launch {
+            // This callback flow handles update to the dropdown menu in the movie list view
             callbackFlow {
+                // Don't read the resources each time a new item is selected
                 val runtimeText = resources.getString(R.string.runtime)
                 val titleText = resources.getString(R.string.title)
                 val voterAverageText = resources.getString(R.string.voter_average)
+
                 val onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
                     override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+                        // Get the string array populating the spinner
                         val selectionList = resources.getStringArray(R.array.sort_options)
+
+                        // Map the string to the OrderCategory and send it downstream
                         when (selectionList[position]) {
+                            // The name says blocking, but in this case, it won't be since we are sending it all using the main thread
                             runtimeText -> trySendBlocking(OrderCategory.RUNTIME)
                             titleText -> trySendBlocking(OrderCategory.TITLE)
                             voterAverageText -> trySendBlocking(OrderCategory.VOTER_AVERAGE)
@@ -62,13 +68,15 @@ class MovieListFragment : Fragment() {
                     }
                 }
 
+                // Set the item selected listener
                 binding.sortSpinner.onItemSelectedListener = onItemSelectedListener
 
+                // When this coroutine is cancelled, remove the listener
                 awaitClose { binding.sortSpinner.onItemSelectedListener = null }
-            }.collectLatest { category ->
+            }.collectLatest { category -> // Each emit will cancel the previous coroutine and begin the movie query again
                 try {
                     binding.movieListProgressBar.visibility = View.VISIBLE
-                    adapter.submitList(null)
+                    adapter.submitList(null) // Blank out the page while the movies load
                     adapter.submitList(viewModel.getMoviesByQuery(args.genre, category))
                 } finally {
                     binding.movieListProgressBar.visibility = View.GONE

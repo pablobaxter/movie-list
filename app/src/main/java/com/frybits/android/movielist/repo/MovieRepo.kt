@@ -28,16 +28,34 @@ import javax.inject.Inject
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 
+/**
+ * Movie repository for getting everything movie related
+ */
 interface MovieRepo {
 
+    /**
+     * Gets the movie object with the give id
+     */
     suspend fun getMovie(id: Int): Result<GetMovieQuery.Movie>
 
+    /**
+     * Retrieve the movie poster image for the given movie id
+     */
     suspend fun getMoviePoster(id: Int): Result<Bitmap>
 
+    /**
+     * Retrieve the cast profile image for the given cast
+     */
     suspend fun getCastProfile(cast: GetMovieQuery.Cast): Result<Bitmap>
 
+    /**
+     * Get the list of all genres
+     */
     suspend fun getMovieGenres(): Result<List<String>>
 
+    /**
+     * Get a list of movies with the given query parameters. Default is all movies.
+     */
     suspend fun getMoviesByQuery(
         genre: String? = null,
         search: String? = null,
@@ -47,6 +65,9 @@ interface MovieRepo {
         sort: Sort? = null
     ): Result<List<GetMoviesQuery.Movie>>
 
+    /**
+     * Helper function to clear memory usage of this repo if the system memory gets too low
+     */
     fun onLowMemory()
 }
 
@@ -57,15 +78,15 @@ class MovieRepoImpl @Inject constructor(
 ): MovieRepo {
 
     override suspend fun getMovie(id: Int): Result<GetMovieQuery.Movie> {
-        return runCatching {
+        return runCatching { // In all these cases, allow Apollo data throw exceptions. Kotlin results will handle everything else.
             return@runCatching requireNotNull(apolloClient.query(GetMovieQuery(id)).execute().dataAssertNoErrors.movie) { "Movie $id not found" }
         }
     }
 
     override suspend fun getMoviePoster(id: Int): Result<Bitmap> {
-        return getMovie(id).mapCatching { movie ->
+        return getMovie(id).mapCatching { movie -> // Get the latest movie info...
             val posterPath = requireNotNull(movie.posterPath) { "No movie poster path found" }
-            return@mapCatching getImageFromCacheThenNetwork(posterPath)
+            return@mapCatching getImageFromCacheThenNetwork(posterPath) // Then get the image for the movie poster path
         }
     }
 
@@ -92,7 +113,7 @@ class MovieRepoImpl @Inject constructor(
     ): Result<List<GetMoviesQuery.Movie>> {
         return runCatching {
             apolloClient.query(
-                GetMoviesQuery(
+                GetMoviesQuery( // All query parameters are optional, to allow for getting all movies
                     genre = Optional.presentIfNotNull(genre),
                     search = Optional.presentIfNotNull(search),
                     limit = Optional.presentIfNotNull(limit),
@@ -104,6 +125,7 @@ class MovieRepoImpl @Inject constructor(
         }
     }
 
+    // Helper function to query the local cache before hitting the network for any images with the given path
     private suspend fun getImageFromCacheThenNetwork(urlPath: String): Bitmap {
         val imageKey = urlPath.generateKeyFromPath()
         val image = imageCache.retrieveImage(imageKey)
@@ -116,6 +138,7 @@ class MovieRepoImpl @Inject constructor(
         }
     }
 
+    // Helper function to get images from the network with the given url
     private suspend fun getImageFromNetwork(urlPath: String): Bitmap? {
         val request = Request.Builder()
             .get()
@@ -143,6 +166,7 @@ class MovieRepoImpl @Inject constructor(
     }
 }
 
+// This helps generate a unique key of a URL based off the path
 private fun String.generateKeyFromPath(): String {
     return URI(this).path.dropWhile { it == '/' }.replace('/', '_')
 }
